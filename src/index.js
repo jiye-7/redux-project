@@ -1,4 +1,5 @@
 import { createStore } from 'redux';
+
 const form = document.querySelector('form');
 const input = document.querySelector('input');
 const ul = document.querySelector('ul');
@@ -6,7 +7,6 @@ const ul = document.querySelector('ul');
 const ADD_TODO = "ADD_TODO";
 const DELETE_TODO = "DELETE_TODO";
 
-// addToDo, deleteToDo function은 오로지 action을 dispatch하기 위한 용도로 둔다. --> object를 리턴하는 것일뿐!
 const addToDo = (text) => {
   return {
     type: ADD_TODO,
@@ -21,15 +21,12 @@ const deleteToDo = (id) => {
   }
 }
 
-// state를 mutate하지 않는다. 새로운 state를 만들어야된다.
 const reducer = (state = [], action) => {
   switch (action.type) {
     case ADD_TODO:
-      const newToDoObj = { text: action.text, id: Date.now() };
-      return [newToDoObj, ...state];
-    //return [{ text: action.text, id: Date.now() }, ...state];
+      return [{ text: action.text, id: Date.now() }, ...state];
     case DELETE_TODO:
-      return state.filter((toDo) => toDo.id !== parseInt(action.id));
+      return state.filter((toDo) => toDo.id !== action.id);
     default:
       return state;
   }
@@ -44,27 +41,28 @@ const dispatchAddToDo = (text) => {
 }
 
 const dispatchDeleteToDo = (e) => {
-  const id = e.target.parentNode.id; // reducer에서 parseInt안 하고 여기서 parseInt(e.target.parentNode.id)하는 것도 괜찮음
+  const id = parseInt(e.target.parentNode.id);
   store.dispatch(deleteToDo(id));
 }
 
-const paintTodo = () => {
+const paintToDos = () => {
   const toDos = store.getState();
   ul.innerHTML = '';
   toDos.forEach((toDo) => {
     const li = document.createElement('li');
-    const btn = document.createElement('button');
     li.id = toDo.id;
     li.innerText = toDo.text;
-    btn.innerText = 'DEL';
-    btn.addEventListener('click', dispatchDeleteToDo);
-    li.appendChild(btn);
+
+    const delBtn = document.createElement('button');
+    delBtn.innerText = 'DEL';
+    delBtn.addEventListener('click', dispatchDeleteToDo);
+
+    li.appendChild(delBtn);
     ul.appendChild(li);
   });
 }
 
-// toDo의 변화에 맞게 list를 reponating한다.
-store.subscribe(paintTodo);
+store.subscribe(paintToDos);
 
 const onSubmit = (e) => {
   e.preventDefault();
